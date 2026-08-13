@@ -51,17 +51,29 @@
             </DockPanel>
 
             <!-- Controles -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-                <Button Content="▶ Iniciar captura" Command="{Binding StartCommand}"/>
-                <Button Content="⏹ Detener" Command="{Binding StopCommand}"/>
+            <WrapPanel Grid.Row="1" Margin="0,0,0,12">
+                <Button Content="▶ Iniciar captura" Command="{Binding StartCommand}" Margin="0,0,8,8"/>
+                <Button Content="⏹ Detener" Command="{Binding StopCommand}" Margin="0,0,8,8"/>
                 <Button Content="⭐ Guardar highlight" Command="{Binding SaveHighlightCommand}"
-                        Style="{StaticResource AccentButton}"/>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        Style="{StaticResource AccentButton}" Margin="0,0,8,8"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,16,8">
                     <TextBlock Text="Buffer (s):" VerticalAlignment="Center" Margin="0,0,6,0"/>
                     <TextBox Width="50" Text="{Binding BufferSeconds}" VerticalAlignment="Center"
                              IsEnabled="{Binding IsRunning, Converter={x:Static local:InverseBoolConverter.Instance}}"/>
                 </StackPanel>
-            </StackPanel>
+                <!-- Música para las ediciones -->
+                <Border Background="#22FFFFFF" CornerRadius="6" Padding="8,4" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🎵" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding MusicLabel}" VerticalAlignment="Center"
+                                   Foreground="#DDD" MaxWidth="160" TextTrimming="CharacterEllipsis"/>
+                        <Button Content="Cargar…" Command="{Binding LoadMusicCommand}"
+                                Padding="10,3" Margin="8,0,0,0" Background="#2A3142"/>
+                        <Button Content="✕" Command="{Binding ClearMusicCommand}"
+                                Padding="8,3" Margin="4,0,0,0" Background="#3A3F49"/>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
 
             <!-- Estado -->
             <Border Grid.Row="2" Background="#B3141A24" CornerRadius="6" Padding="12" Margin="0,0,0,12">

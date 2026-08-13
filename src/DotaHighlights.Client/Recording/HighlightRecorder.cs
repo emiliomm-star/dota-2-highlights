@@ -98,7 +98,7 @@ public sealed class HighlightRecorder : IDisposable
             double duration = frameCount / (double)Math.Max(1, _source.Fps);
             // El momento clave (kill) es ~postRoll segundos antes del final.
             double moneyShot = duration - _settings.PostRollSeconds;
-            var edits = await _editor.EditAllAsync(source, moneyShot);
+            var edits = await _editor.EditAllAsync(source, moneyShot, _settings.MusicPath);
             _log.Information("Ediciones generadas: {Count}", edits.Count);
             EditsReady?.Invoke(edits);
         }

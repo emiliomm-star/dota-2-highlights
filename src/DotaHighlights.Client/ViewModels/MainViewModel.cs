@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DotaHighlights.Client.Editing;
 using DotaHighlights.Client.Recording;
+using Microsoft.Win32;
 using Serilog;
 
 namespace DotaHighlights.Client.ViewModels;
@@ -26,6 +27,8 @@ public sealed partial class MainViewModel : ObservableObject
         StatusText = "Detenido";
         OutputFolder = settings.OutputFolder;
         BufferSeconds = settings.BufferSeconds;
+        MusicLabel = string.IsNullOrWhiteSpace(settings.MusicPath)
+            ? "Ninguna" : Path.GetFileName(settings.MusicPath);
     }
 
     public ObservableCollection<ClipItem> SavedClips { get; } = new();
@@ -35,6 +38,34 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isEditing;
+
+    /// <summary>Nombre del archivo de música elegido (o "Ninguna").</summary>
+    [ObservableProperty]
+    private string _musicLabel = "Ninguna";
+
+    [RelayCommand]
+    private void LoadMusic()
+    {
+        var dlg = new OpenFileDialog
+        {
+            Title = "Elige una canción para tus ediciones",
+            Filter = "Audio (*.mp3;*.wav;*.m4a;*.aac;*.flac;*.ogg)|*.mp3;*.wav;*.m4a;*.aac;*.flac;*.ogg|Todos|*.*",
+        };
+        if (dlg.ShowDialog() == true)
+        {
+            _settings.MusicPath = dlg.FileName;
+            MusicLabel = Path.GetFileName(dlg.FileName);
+            StatusText = $"🎵 Música: {MusicLabel} (se usará en las próximas ediciones)";
+        }
+    }
+
+    [RelayCommand]
+    private void ClearMusic()
+    {
+        _settings.MusicPath = "";
+        MusicLabel = "Ninguna";
+        StatusText = "🎵 Música quitada (ediciones sin sonido)";
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartCommand))]
