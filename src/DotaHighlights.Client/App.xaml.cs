@@ -41,6 +41,8 @@ public partial class App : Application
         // (En Fase 2 podremos apuntar a la ventana de Dota 2 pasando su HWND.)
         IFrameSource source = new GraphicsCaptureSource(settings.Fps);
 
+        settings.FfmpegPath = FfmpegLocator.Resolve(settings.FfmpegPath);
+        Log.Information("ffmpeg: {Path}", settings.FfmpegPath);
         IClipEncoder encoder = new NvencClipEncoder(settings.FfmpegPath);
 
         _recorder = new HighlightRecorder(source, encoder, settings, Log.Logger);

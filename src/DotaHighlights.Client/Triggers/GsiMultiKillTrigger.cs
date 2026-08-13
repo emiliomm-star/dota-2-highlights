@@ -32,6 +32,7 @@ public sealed class GsiMultiKillTrigger : IHighlightTrigger
     private int _lastDeaths = -1;
     private readonly List<double> _recentKillTimes = new();
     private bool _firedThisCluster;
+    private bool _loggedFirstPayload;
 
     public event EventHandler<HighlightTriggeredEventArgs>? Triggered;
 
@@ -62,6 +63,13 @@ public sealed class GsiMultiKillTrigger : IHighlightTrigger
         GsiState? state;
         try { state = JsonSerializer.Deserialize<GsiState>(json, JsonOpts); }
         catch (Exception ex) { _log.Debug(ex, "GSI: JSON no parseable"); return; }
+
+        if (!_loggedFirstPayload)
+        {
+            _loggedFirstPayload = true;
+            _log.Information("GSI: recibiendo datos de Dota 2 ✔ (estado: {State})",
+                state?.Map?.GameState ?? "?");
+        }
 
         var player = state?.Player;
         if (player?.Kills is not int kills) return;
@@ -101,6 +109,7 @@ public sealed class GsiMultiKillTrigger : IHighlightTrigger
             if (kills > _lastKills)
             {
                 int delta = kills - _lastKills;
+                _log.Information("GSI: kill! total={Kills} (+{Delta}), t={Clock:0}s", kills, delta, now);
                 for (int i = 0; i < delta; i++) _recentKillTimes.Add(now);
 
                 // Descarta kills fuera de la ventana.
