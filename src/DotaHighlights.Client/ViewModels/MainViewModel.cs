@@ -92,6 +92,12 @@ public sealed partial class MainViewModel : ObservableObject
 
     private bool CanSave() => IsRunning && !IsSaving;
 
+    /// <summary>Se emite cuando el usuario quiere volver a la tienda.</summary>
+    public event Action? BackRequested;
+
+    [RelayCommand]
+    private void BackToStore() => BackRequested?.Invoke();
+
     /// <summary>Invocado por cualquier gatillo (hotkey o IA/GSI). Debe llamarse en el hilo de UI.</summary>
     public void TriggerSave(string reason)
     {

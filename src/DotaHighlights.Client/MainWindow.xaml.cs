@@ -7,31 +7,30 @@ namespace DotaHighlights.Client;
 
 public partial class MainWindow : Window
 {
-    private readonly MainViewModel _vm;
+    private readonly MainViewModel _captureVm;
     private HotkeyTrigger? _hotkey;
 
-    public MainWindow(MainViewModel vm)
+    public MainWindow(ShellViewModel shell, MainViewModel captureVm)
     {
         InitializeComponent();
-        _vm = vm;
-        DataContext = vm;
+        _captureVm = captureVm;
+        DataContext = shell;
     }
 
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
 
-        // Registra el hotkey global F9 como primer IHighlightTrigger (Fase 1).
+        // Hotkey global F9 (guardado manual de respaldo), atado a la ventana.
         var hwnd = new WindowInteropHelper(this).Handle;
         _hotkey = new HotkeyTrigger(hwnd, virtualKey: 0x78 /* F9 */);
-        _hotkey.Triggered += (_, e) => _vm.TriggerSave(e.Reason);
+        _hotkey.Triggered += (_, ev) => _captureVm.TriggerSave(ev.Reason);
         try
         {
             _hotkey.Start();
         }
         catch (Exception ex)
         {
-            // No es fatal: el botón "Guardar highlight" sigue funcionando.
             MessageBox.Show($"No se pudo registrar el atajo F9: {ex.Message}",
                 "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
         }

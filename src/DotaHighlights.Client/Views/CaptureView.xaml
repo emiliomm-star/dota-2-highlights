@@ -1,0 +1,101 @@
+<UserControl x:Class="DotaHighlights.Client.Views.CaptureView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DotaHighlights.Client"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid>
+        <!-- ===== Fondo temático (original, no arte oficial) ===== -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0.3,1">
+                <GradientStop Color="#0A0C11" Offset="0"/>
+                <GradientStop Color="#160B0B" Offset="0.55"/>
+                <GradientStop Color="#22090A" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- Resplandor carmesí superior -->
+        <Border>
+            <Border.Background>
+                <RadialGradientBrush GradientOrigin="0.5,0" Center="0.5,0" RadiusX="0.9" RadiusY="0.7">
+                    <GradientStop Color="#553A1410" Offset="0"/>
+                    <GradientStop Color="#00000000" Offset="1"/>
+                </RadialGradientBrush>
+            </Border.Background>
+        </Border>
+
+        <!-- Emblema angular tenue (marca de agua) -->
+        <Viewbox HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                 Width="520" Margin="0,0,-80,-120" Opacity="0.06">
+            <Path Fill="#E0662B" Data="M50,0 L62,38 L100,38 L70,60 L82,100 L50,74 L18,100 L30,60 L0,38 L38,38 Z"/>
+        </Viewbox>
+
+        <!-- ===== Contenido ===== -->
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado con botón volver -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,16">
+                <Button DockPanel.Dock="Left" Content="◀ Tienda"
+                        Command="{Binding BackToStoreCommand}"
+                        Background="#22FFFFFF" Padding="12,6" Margin="0,0,16,0"/>
+                <TextBlock Text="🎬 Dota 2 Highlights" FontSize="24" FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+            </DockPanel>
+
+            <!-- Controles -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                <Button Content="▶ Iniciar captura" Command="{Binding StartCommand}"/>
+                <Button Content="⏹ Detener" Command="{Binding StopCommand}"/>
+                <Button Content="⭐ Guardar highlight" Command="{Binding SaveHighlightCommand}"
+                        Style="{StaticResource AccentButton}"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <TextBlock Text="Buffer (s):" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox Width="50" Text="{Binding BufferSeconds}" VerticalAlignment="Center"
+                             IsEnabled="{Binding IsRunning, Converter={x:Static local:InverseBoolConverter.Instance}}"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Estado -->
+            <Border Grid.Row="2" Background="#B3141A24" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="{Binding StatusText}" FontSize="15"/>
+                    <TextBlock Text="🤖 Automático: detecta doble/triple kill en Dota 2 (GSI) y guarda el clip solo. F9 = guardado manual de respaldo."
+                               FontSize="12" Foreground="#9AA3B2" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Clips guardados -->
+            <Border Grid.Row="3" Background="#B3141A24" CornerRadius="6" Padding="8">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Clips guardados" FontWeight="Bold"
+                               Margin="4,4,4,8"/>
+                    <ListBox ItemsSource="{Binding SavedClips}" Background="Transparent"
+                             BorderThickness="0" Foreground="#DDD">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="4">
+                                    <Border Background="#C1440E" CornerRadius="3" Padding="6,1" Margin="0,0,8,0">
+                                        <TextBlock Text="{Binding Reason}" FontSize="11" Foreground="#FFF"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding Name}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Pie -->
+            <TextBlock Grid.Row="4" Margin="0,10,0,0" FontSize="12" Foreground="#8A93A6"
+                       Text="{Binding OutputFolder, StringFormat='Carpeta de salida: {0}'}"/>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -47,8 +47,11 @@ public partial class App : Application
 
         _recorder = new HighlightRecorder(source, encoder, settings, Log.Logger);
 
-        var vm = new MainViewModel(_recorder, settings, Log.Logger);
-        var window = new MainWindow(vm);
+        var captureVm = new MainViewModel(_recorder, settings, Log.Logger);
+        var storeVm = new StoreViewModel();
+        var shellVm = new ShellViewModel(storeVm, captureVm);
+
+        var window = new MainWindow(shellVm, captureVm);
         MainWindow = window;
         window.Show();
 
@@ -57,12 +60,12 @@ public partial class App : Application
         _gsiTrigger = new GsiMultiKillTrigger(
             gsiListener, Log.Logger, settings.MinKillsForHighlight, settings.PostRollSeconds);
         _gsiTrigger.Triggered += (_, e) =>
-            Dispatcher.Invoke(() => vm.TriggerSave(e.Reason));
+            Dispatcher.Invoke(() => captureVm.TriggerSave(e.Reason));
         _gsiTrigger.Start();
 
         // Captura siempre activa: el highlight se guarda solo, sin botones.
         if (settings.AutoStartCapture)
-            vm.StartCommand.Execute(null);
+            captureVm.StartCommand.Execute(null);
     }
 
     protected override void OnExit(ExitEventArgs e)

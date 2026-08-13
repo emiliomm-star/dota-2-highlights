@@ -3,84 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:DotaHighlights.Client"
+        xmlns:vm="clr-namespace:DotaHighlights.Client.ViewModels"
+        xmlns:views="clr-namespace:DotaHighlights.Client.Views"
         mc:Ignorable="d"
-        Title="Dota 2 Highlights" Height="520" Width="820"
-        Background="#12151C">
+        Title="Highlights Store" Height="640" Width="960"
+        Background="#0B0D12">
     <Window.Resources>
-        <Style TargetType="Button">
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#EEE"/>
-            <Setter Property="Background" Value="#2A3142"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#DDD"/>
-        </Style>
+        <!-- Mapea cada ViewModel a su vista -->
+        <DataTemplate DataType="{x:Type vm:StoreViewModel}">
+            <views:StoreView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:MainViewModel}">
+            <views:CaptureView/>
+        </DataTemplate>
     </Window.Resources>
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <!-- Encabezado -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-            <TextBlock Text="🎬 Dota 2 Highlights" FontSize="24" FontWeight="Bold"/>
-        </StackPanel>
-
-        <!-- Controles -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <Button Content="▶ Iniciar captura" Command="{Binding StartCommand}"/>
-            <Button Content="⏹ Detener" Command="{Binding StopCommand}"/>
-            <Button Content="⭐ Guardar highlight" Command="{Binding SaveHighlightCommand}"
-                    Background="#3B5BA5"/>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                <TextBlock Text="Buffer (s):" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                <TextBox Width="50" Text="{Binding BufferSeconds}" VerticalAlignment="Center"
-                         IsEnabled="{Binding IsRunning, Converter={x:Static local:InverseBoolConverter.Instance}}"/>
-            </StackPanel>
-        </StackPanel>
-
-        <!-- Estado -->
-        <Border Grid.Row="2" Background="#1B2029" CornerRadius="6" Padding="12" Margin="0,0,0,12">
-            <StackPanel>
-                <TextBlock Text="{Binding StatusText}" FontSize="15"/>
-                <TextBlock Text="🤖 Automático: detecta doble/triple kill en Dota 2 (GSI) y guarda el clip solo. F9 = guardado manual de respaldo."
-                           FontSize="12" Foreground="#8A93A6" Margin="0,6,0,0" TextWrapping="Wrap"/>
-            </StackPanel>
-        </Border>
-
-        <!-- Clips guardados -->
-        <Border Grid.Row="3" Background="#1B2029" CornerRadius="6" Padding="8">
-            <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="Clips guardados" FontWeight="Bold"
-                           Margin="4,4,4,8"/>
-                <ListBox ItemsSource="{Binding SavedClips}" Background="Transparent"
-                         BorderThickness="0" Foreground="#DDD">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="4">
-                                <Border Background="#3B5BA5" CornerRadius="3" Padding="6,1" Margin="0,0,8,0">
-                                    <TextBlock Text="{Binding Reason}" FontSize="11" Foreground="#FFF"/>
-                                </Border>
-                                <TextBlock Text="{Binding Name}"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </DockPanel>
-        </Border>
-
-        <!-- Pie -->
-        <TextBlock Grid.Row="4" Margin="0,10,0,0" FontSize="12" Foreground="#8A93A6"
-                   Text="{Binding OutputFolder, StringFormat='Carpeta de salida: {0}'}"/>
-    </Grid>
+    <ContentControl Content="{Binding CurrentView}"/>
 </Window>
