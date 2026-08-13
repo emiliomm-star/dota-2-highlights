@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore
+      - name: Publicar aplicación (self-contained, win-x64)
+        run: >
+          dotnet publish ./src/DotaHighlights.Client/DotaHighlights.Client.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -o ${{ github.workspace }}/publish
+      - name: Instalar WiX Toolset CLI
+        run: dotnet tool install --global wix --version 7.0.0
+      - name: Aceptar EULA de WiX (OSMF)
+        run: wix eula accept wix7
+      - name: Añadir extensión UI de WiX
+        run: wix extension add -g WixToolset.UI.wixext
+      - name: Compilar instalador (.msi) con WiX
+        run: >
+          wix build ./Installers/WiX/Product.wxs
+          -ext WixToolset.UI.wixext
+          -arch x64
+          -d PublishDir=${{ github.workspace }}/publish
+          -o ${{ github.workspace }}/dist/DotaHighlightsSetup.msi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: instalador
+          path: ${{ github.workspace }}/dist/DotaHighlightsSetup.msi
+      - name: Crear GitHub Release y adjuntar instalador
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ github.workspace }}/dist/DotaHighlightsSetup.msi
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

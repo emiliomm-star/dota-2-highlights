@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <!-- PublishDir se pasa por línea de comandos: -d PublishDir=./publish -->
+  <?ifndef PublishDir?>
+    <?define PublishDir="..\..\publish"?>
+  <?endif?>
+
+  <Package Name="Dota 2 Highlights"
+           Manufacturer="Emilio"
+           Version="1.0.0.0"
+           UpgradeCode="48E8BA3E-59B4-4D4B-BC3D-6DF162CA8EE6"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <!-- Evita instalar versiones más antiguas encima de una nueva -->
+    <MajorUpgrade DowngradeErrorMessage="Ya hay una versión más reciente de [ProductName] instalada." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="Main" Title="Dota 2 Highlights" Level="1">
+      <ComponentGroupRef Id="PublishedFiles" />
+      <ComponentRef Id="AppShortcut" />
+    </Feature>
+
+    <!-- UI de instalación con selección de carpeta.
+         WixUI con InstallDirectory ya define la propiedad WIXUI_INSTALLDIR. -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+  </Package>
+
+  <!-- Carpeta de instalación -->
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Dota 2 Highlights" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppProgramMenuDir" Name="Dota 2 Highlights" />
+    </StandardDirectory>
+  </Fragment>
+
+  <!-- Archivos publicados por 'dotnet publish' (cosechados de PublishDir) -->
+  <Fragment>
+    <ComponentGroup Id="PublishedFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(var.PublishDir)\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Acceso directo en el menú Inicio -->
+  <Fragment>
+    <Component Id="AppShortcut" Directory="AppProgramMenuDir" Guid="*">
+      <Shortcut Id="StartMenuShortcut"
+                Name="Dota 2 Highlights"
+                Target="[INSTALLFOLDER]DotaHighlights.Client.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveAppProgramMenuDir" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\Emilio\Dota2Highlights"
+                     Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+
+</Wix>

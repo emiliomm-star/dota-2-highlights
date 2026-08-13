@@ -1,0 +1,36 @@
+services:
+  grpc-server:
+    build:
+      context: ./src/dota2_ai
+      dockerfile: Dockerfile
+    image: dota2-highlights/grpc-server:latest
+    container_name: grpc-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./src/dota2_ai:/app
+      - modelo-cache:/root/.cache
+    networks:
+      - app-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost',50051))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  modelo-cache:
+
+networks:
+  app-net:
+    driver: bridge
