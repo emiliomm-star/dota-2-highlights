@@ -1,0 +1,21 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+publish/
+dist/
+
+## Python
+.venv/
+__pycache__/
+*.pyc
+src/dota2_ai/generated/
+
+## Modelos / datos pesados
+*.onnx
+models/
+
+## Varios
+.env
+*.log

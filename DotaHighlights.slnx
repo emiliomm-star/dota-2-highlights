@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DotaHighlights.Client/DotaHighlights.Client.csproj" />
+  </Folder>
+</Solution>
