@@ -1,5 +1,6 @@
 using System.IO;
 using DotaHighlights.Client.Capture;
+using DotaHighlights.Client.Editing;
 using DotaHighlights.Client.Encoding;
 using Serilog;
 
@@ -15,6 +16,7 @@ public sealed class HighlightRecorder : IDisposable
     private readonly IFrameSource _source;
     private readonly RingBuffer _buffer;
     private readonly IClipEncoder _encoder;
+    private readonly VideoEditor _editor;
     private readonly AppSettings _settings;
     private readonly ILogger _log;
     private volatile bool _running;
@@ -29,6 +31,7 @@ public sealed class HighlightRecorder : IDisposable
         _encoder = encoder;
         _settings = settings;
         _log = log;
+        _editor = new VideoEditor(settings.FfmpegPath, log);
         _buffer = new RingBuffer(TimeSpan.FromSeconds(settings.BufferSeconds));
     }
 
@@ -38,6 +41,12 @@ public sealed class HighlightRecorder : IDisposable
 
     /// <summary>Se emite cuando un clip queda guardado (ruta del archivo).</summary>
     public event Action<string>? ClipSaved;
+
+    /// <summary>Se emite al empezar a generar las ediciones derivadas.</summary>
+    public event Action? EditsStarted;
+
+    /// <summary>Se emite con las ediciones derivadas ya generadas.</summary>
+    public event Action<IReadOnlyList<EditedClip>>? EditsReady;
 
     public void Start()
     {
@@ -75,7 +84,28 @@ public sealed class HighlightRecorder : IDisposable
         _log.Information("Highlight guardado: {Path}", path);
 
         ClipSaved?.Invoke(path);
+
+        // Genera las ediciones derivadas en segundo plano (no bloquea el guardado).
+        _ = GenerateEditsAsync(path, frames.Count);
         return path;
+    }
+
+    private async Task GenerateEditsAsync(string source, int frameCount)
+    {
+        try
+        {
+            EditsStarted?.Invoke();
+            double duration = frameCount / (double)Math.Max(1, _source.Fps);
+            // El momento clave (kill) es ~postRoll segundos antes del final.
+            double moneyShot = duration - _settings.PostRollSeconds;
+            var edits = await _editor.EditAllAsync(source, moneyShot);
+            _log.Information("Ediciones generadas: {Count}", edits.Count);
+            EditsReady?.Invoke(edits);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "Fallo generando ediciones derivadas");
+        }
     }
 
     public void Dispose()

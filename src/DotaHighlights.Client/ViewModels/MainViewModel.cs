@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DotaHighlights.Client.Editing;
 using DotaHighlights.Client.Recording;
 using Serilog;
 
@@ -19,12 +21,20 @@ public sealed partial class MainViewModel : ObservableObject
         _settings = settings;
         _log = log;
         _recorder.ClipSaved += OnClipSaved;
+        _recorder.EditsStarted += OnEditsStarted;
+        _recorder.EditsReady += OnEditsReady;
         StatusText = "Detenido";
         OutputFolder = settings.OutputFolder;
         BufferSeconds = settings.BufferSeconds;
     }
 
     public ObservableCollection<ClipItem> SavedClips { get; } = new();
+
+    /// <summary>Las 3 ediciones "con aura" del último highlight guardado.</summary>
+    public ObservableCollection<EditedClip> RecommendedEdits { get; } = new();
+
+    [ObservableProperty]
+    private bool _isEditing;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StartCommand))]
@@ -112,6 +122,41 @@ public sealed partial class MainViewModel : ObservableObject
         // ClipSaved puede llegar desde un hilo de fondo: marshalizamos a la UI.
         App.Current.Dispatcher.Invoke(() =>
             SavedClips.Insert(0, new ClipItem(Path.GetFileName(path), path, reason)));
+    }
+
+    private void OnEditsStarted() => App.Current.Dispatcher.Invoke(() =>
+    {
+        IsEditing = true;
+        RecommendedEdits.Clear();
+        StatusText = "✨ Generando ediciones con aura…";
+    });
+
+    private void OnEditsReady(IReadOnlyList<EditedClip> edits) => App.Current.Dispatcher.Invoke(() =>
+    {
+        IsEditing = false;
+        RecommendedEdits.Clear();
+        foreach (var e in edits) RecommendedEdits.Add(e);
+        StatusText = edits.Count > 0
+            ? $"✨ {edits.Count} ediciones listas del último highlight"
+            : StatusText;
+    });
+
+    [RelayCommand]
+    private void PlayEdit(EditedClip? clip)
+    {
+        if (clip is not null && File.Exists(clip.Path)) OpenFile(clip.Path);
+    }
+
+    [RelayCommand]
+    private void PlayClip(ClipItem? clip)
+    {
+        if (clip is not null && File.Exists(clip.FullPath)) OpenFile(clip.FullPath);
+    }
+
+    private void OpenFile(string path)
+    {
+        try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
+        catch (Exception ex) { _log.Warning(ex, "No se pudo abrir {Path}", path); }
     }
 }
 
