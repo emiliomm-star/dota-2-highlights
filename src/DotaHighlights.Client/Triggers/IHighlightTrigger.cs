@@ -9,7 +9,7 @@ namespace DotaHighlights.Client.Triggers;
 public interface IHighlightTrigger : IDisposable
 {
     /// <summary>Se dispara cuando hay que guardar el clip de los últimos N segundos.</summary>
-    event EventHandler? Triggered;
+    event EventHandler<HighlightTriggeredEventArgs>? Triggered;
 
     void Start();
     void Stop();

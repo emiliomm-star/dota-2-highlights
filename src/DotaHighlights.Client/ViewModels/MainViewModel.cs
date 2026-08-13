@@ -65,16 +65,19 @@ public sealed partial class MainViewModel : ObservableObject
 
     private bool CanStop() => IsRunning;
 
+    private string _lastReason = "Manual";
+
     [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveHighlightAsync()
     {
         if (IsSaving) return;
+        var reason = _lastReason;
         IsSaving = true;
-        StatusText = "Guardando highlight…";
+        StatusText = $"Guardando highlight ({reason})…";
         try
         {
             var path = await Task.Run(() => _recorder.SaveHighlightAsync());
-            StatusText = $"Guardado: {Path.GetFileName(path)}";
+            StatusText = $"⭐ {reason} guardado: {Path.GetFileName(path)}";
         }
         catch (Exception ex)
         {
@@ -89,19 +92,21 @@ public sealed partial class MainViewModel : ObservableObject
 
     private bool CanSave() => IsRunning && !IsSaving;
 
-    /// <summary>Invocado por el gatillo (hotkey) desde el code-behind.</summary>
-    public void TriggerSave()
+    /// <summary>Invocado por cualquier gatillo (hotkey o IA/GSI). Debe llamarse en el hilo de UI.</summary>
+    public void TriggerSave(string reason)
     {
+        _lastReason = reason;
         if (SaveHighlightCommand.CanExecute(null))
             SaveHighlightCommand.Execute(null);
     }
 
     private void OnClipSaved(string path)
     {
+        var reason = _lastReason;
         // ClipSaved puede llegar desde un hilo de fondo: marshalizamos a la UI.
         App.Current.Dispatcher.Invoke(() =>
-            SavedClips.Insert(0, new ClipItem(Path.GetFileName(path), path)));
+            SavedClips.Insert(0, new ClipItem(Path.GetFileName(path), path, reason)));
     }
 }
 
-public sealed record ClipItem(string Name, string FullPath);
+public sealed record ClipItem(string Name, string FullPath, string Reason);

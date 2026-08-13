@@ -24,7 +24,7 @@ public sealed class HotkeyTrigger : IHighlightTrigger
     private HwndSource? _source;
     private bool _registered;
 
-    public event EventHandler? Triggered;
+    public event EventHandler<HighlightTriggeredEventArgs>? Triggered;
 
     /// <param name="windowHandle">HWND de la ventana principal (para recibir el mensaje).</param>
     /// <param name="virtualKey">Virtual-key code. 0x78 = F9.</param>
@@ -62,7 +62,7 @@ public sealed class HotkeyTrigger : IHighlightTrigger
     {
         if (msg == WM_HOTKEY && wParam.ToInt32() == HotkeyId)
         {
-            Triggered?.Invoke(this, EventArgs.Empty);
+            Triggered?.Invoke(this, new HighlightTriggeredEventArgs("Hotkey F9"));
             handled = true;
         }
         return IntPtr.Zero;

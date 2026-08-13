@@ -19,6 +19,19 @@ public sealed class AppSettings
     /// <summary>Ruta a ffmpeg.exe (o "ffmpeg" si está en el PATH).</summary>
     public string FfmpegPath { get; set; } = "ffmpeg";
 
+    /// <summary>Puerto local donde escuchamos el Game State Integration de Dota 2.
+    /// Se evita el rango 50000-53362 que Hyper-V/WSL reservan en esta máquina.</summary>
+    public int GsiPort { get; set; } = 8801;
+
+    /// <summary>Kills en la ventana para considerar highlight (2 = doble kill).</summary>
+    public int MinKillsForHighlight { get; set; } = 2;
+
+    /// <summary>Empezar a capturar automáticamente al abrir la app.</summary>
+    public bool AutoStartCapture { get; set; } = true;
+
+    /// <summary>Token de autenticación del GSI (debe coincidir con el del .cfg).</summary>
+    public string GsiAuthToken { get; set; } = "dota2highlights";
+
     private static string DefaultOutputFolder()
     {
         var videos = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);

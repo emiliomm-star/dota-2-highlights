@@ -24,7 +24,7 @@ public partial class MainWindow : Window
         // Registra el hotkey global F9 como primer IHighlightTrigger (Fase 1).
         var hwnd = new WindowInteropHelper(this).Handle;
         _hotkey = new HotkeyTrigger(hwnd, virtualKey: 0x78 /* F9 */);
-        _hotkey.Triggered += (_, _) => _vm.TriggerSave();
+        _hotkey.Triggered += (_, e) => _vm.TriggerSave(e.Reason);
         try
         {
             _hotkey.Start();
