@@ -1,0 +1,15 @@
+# --- gRPC (streaming bidireccional con el cliente C#) ---
+grpcio==1.83.0
+grpcio-tools==1.83.0
+protobuf>=6,<8
+
+# --- Procesamiento de video ---
+opencv-python==5.0.0.93
+# En Docker/servidor sin entorno gráfico usar en su lugar:
+# opencv-python-headless==5.0.0.93
+
+# --- Inferencia IA acelerada por GPU (CUDA 13.x / cuDNN 9.x) ---
+onnxruntime-gpu==1.28.0
+
+# --- Numérico ---
+numpy==2.5.2   # requiere Python >= 3.12
