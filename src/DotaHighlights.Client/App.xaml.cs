@@ -34,9 +34,9 @@ public partial class App : Application
         Log.Information("Aplicación iniciada");
 
         // --- Composición de dependencias (Fase 1) ---
-        // Fuente sintética por ahora; se sustituye por captura real (WGC) a continuación.
-        IFrameSource source = new SyntheticFrameSource(
-            settings.CaptureWidth, settings.CaptureHeight, settings.Fps);
+        // Captura real del monitor principal con Windows.Graphics.Capture.
+        // (En Fase 2 podremos apuntar a la ventana de Dota 2 pasando su HWND.)
+        IFrameSource source = new GraphicsCaptureSource(settings.Fps);
 
         IClipEncoder encoder = new NvencClipEncoder(settings.FfmpegPath);
 
