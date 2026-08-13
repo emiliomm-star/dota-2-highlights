@@ -5,8 +5,12 @@ namespace DotaHighlights.Client;
 /// <summary>Configuración del MVP. En fases posteriores se persistirá a disco.</summary>
 public sealed class AppSettings
 {
-    /// <summary>Segundos de historia que conserva el buffer (lo que se guarda al disparar).</summary>
-    public int BufferSeconds { get; set; } = 15;
+    /// <summary>Segundos de historia que conserva el buffer (lo que se guarda al disparar).
+    /// Debe cubrir la construcción de la jugada + los kills + el post-roll.</summary>
+    public int BufferSeconds { get; set; } = 25;
+
+    /// <summary>Segundos que se sigue grabando tras el último kill antes de guardar (el "después").</summary>
+    public double PostRollSeconds { get; set; } = 8;
 
     public int Fps { get; set; } = 30;
 

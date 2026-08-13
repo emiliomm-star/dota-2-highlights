@@ -55,7 +55,7 @@ public partial class App : Application
         // --- Detección automática (Fase 2): Game State Integration de Dota 2 ---
         var gsiListener = new GsiListener(settings.GsiPort, Log.Logger);
         _gsiTrigger = new GsiMultiKillTrigger(
-            gsiListener, Log.Logger, settings.MinKillsForHighlight);
+            gsiListener, Log.Logger, settings.MinKillsForHighlight, settings.PostRollSeconds);
         _gsiTrigger.Triggered += (_, e) =>
             Dispatcher.Invoke(() => vm.TriggerSave(e.Reason));
         _gsiTrigger.Start();
