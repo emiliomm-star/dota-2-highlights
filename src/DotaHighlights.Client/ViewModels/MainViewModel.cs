@@ -23,7 +23,8 @@ public sealed partial class MainViewModel : ObservableObject
         _log = log;
         _recorder.ClipSaved += OnClipSaved;
         _recorder.EditsStarted += OnEditsStarted;
-        _recorder.EditsReady += OnEditsReady;
+        _recorder.EditReady += OnEditReady;
+        _recorder.EditsCompleted += OnEditsCompleted;
         StatusText = "Detenido";
         OutputFolder = settings.OutputFolder;
         BufferSeconds = settings.BufferSeconds;
@@ -162,14 +163,18 @@ public sealed partial class MainViewModel : ObservableObject
         StatusText = "✨ Generando ediciones con aura…";
     });
 
-    private void OnEditsReady(IReadOnlyList<EditedClip> edits) => App.Current.Dispatcher.Invoke(() =>
+    private void OnEditReady(EditedClip clip) => App.Current.Dispatcher.Invoke(() =>
+    {
+        // Inserta manteniendo el orden por Rank (Pro Montage primero).
+        int i = 0;
+        while (i < RecommendedEdits.Count && RecommendedEdits[i].Rank <= clip.Rank) i++;
+        RecommendedEdits.Insert(i, clip);
+    });
+
+    private void OnEditsCompleted(int count) => App.Current.Dispatcher.Invoke(() =>
     {
         IsEditing = false;
-        RecommendedEdits.Clear();
-        foreach (var e in edits) RecommendedEdits.Add(e);
-        StatusText = edits.Count > 0
-            ? $"✨ {edits.Count} ediciones listas del último highlight"
-            : StatusText;
+        if (count > 0) StatusText = $"✨ {count} ediciones listas del último highlight";
     });
 
     [RelayCommand]

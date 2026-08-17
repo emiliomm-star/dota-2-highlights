@@ -45,8 +45,11 @@ public sealed class HighlightRecorder : IDisposable
     /// <summary>Se emite al empezar a generar las ediciones derivadas.</summary>
     public event Action? EditsStarted;
 
-    /// <summary>Se emite con las ediciones derivadas ya generadas.</summary>
-    public event Action<IReadOnlyList<EditedClip>>? EditsReady;
+    /// <summary>Se emite cada vez que UNA edición queda lista.</summary>
+    public event Action<EditedClip>? EditReady;
+
+    /// <summary>Se emite cuando terminan todas (con el total generado).</summary>
+    public event Action<int>? EditsCompleted;
 
     public void Start()
     {
@@ -98,9 +101,10 @@ public sealed class HighlightRecorder : IDisposable
             double duration = frameCount / (double)Math.Max(1, _source.Fps);
             // El momento clave (kill) es ~postRoll segundos antes del final.
             double moneyShot = duration - _settings.PostRollSeconds;
-            var edits = await _editor.EditAllAsync(source, moneyShot, _settings.MusicPath);
+            var progress = new Progress<EditedClip>(clip => EditReady?.Invoke(clip));
+            var edits = await _editor.EditAllAsync(source, moneyShot, _settings.MusicPath, progress);
             _log.Information("Ediciones generadas: {Count}", edits.Count);
-            EditsReady?.Invoke(edits);
+            EditsCompleted?.Invoke(edits.Count);
         }
         catch (Exception ex)
         {
