@@ -31,6 +31,7 @@ public sealed class GsiPlayer
 
 public sealed class GsiHero
 {
+    [JsonPropertyName("name")] public string? Name { get; set; }
     [JsonPropertyName("alive")] public bool? Alive { get; set; }
     [JsonPropertyName("level")] public int? Level { get; set; }
 }

@@ -45,7 +45,8 @@ public partial class App : Application
         Log.Information("ffmpeg: {Path}", settings.FfmpegPath);
         IClipEncoder encoder = new NvencClipEncoder(settings.FfmpegPath);
 
-        _recorder = new HighlightRecorder(source, encoder, settings, Log.Logger);
+        var gameState = new Gsi.GameState();
+        _recorder = new HighlightRecorder(source, encoder, settings, gameState, Log.Logger);
 
         var captureVm = new MainViewModel(_recorder, settings, Log.Logger);
         var storeVm = new StoreViewModel();
@@ -58,7 +59,7 @@ public partial class App : Application
         // --- Detección automática (Fase 2): Game State Integration de Dota 2 ---
         var gsiListener = new GsiListener(settings.GsiPort, Log.Logger);
         _gsiTrigger = new GsiMultiKillTrigger(
-            gsiListener, Log.Logger, settings.MinKillsForHighlight, settings.PostRollSeconds);
+            gsiListener, Log.Logger, gameState, settings.MinKillsForHighlight, settings.PostRollSeconds);
         _gsiTrigger.Triggered += (_, e) =>
             Dispatcher.Invoke(() => captureVm.TriggerSave(e.Reason));
         _gsiTrigger.Start();

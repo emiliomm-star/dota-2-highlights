@@ -38,24 +38,24 @@ public static class EditPresets
             "vignette=PI/5,noise=alls=6:allf=t," +
             "drawbox=y=0:w=iw:h=ih*0.10:color=black@1:t=fill," +
             "drawbox=y=ih*0.90:w=iw:h=ih*0.10:color=black@1:t=fill," +
-            $"fade=t=in:st=0:d=0.5,fade=t=out:st={F(fo)}:d=0.5[v]";
+            $"fade=t=in:st=0:d=0.5,fade=t=out:st={F(fo)}:d=0.5[vbase]";
     }
 
     private static string Slowmo(EditContext c) =>
         $"[0:v]trim=0:{F(c.SlowStart)},setpts=PTS-STARTPTS[a];" +
         $"[0:v]trim={F(c.SlowStart)}:{F(c.SlowEnd)},setpts=(PTS-STARTPTS)/0.35,eq=saturation=1.2:contrast=1.05[bb];" +
         $"[0:v]trim={F(c.SlowEnd)},setpts=PTS-STARTPTS[c];" +
-        "[a][bb][c]concat=n=3:v=1[v]";
+        "[a][bb][c]concat=n=3:v=1[vbase]";
 
     private static string Zoom(EditContext c) =>
         $"[0:v]trim=0:{F(c.SlowStart)},setpts=PTS-STARTPTS,eq=saturation=1.25:contrast=1.08[a];" +
         $"[0:v]trim={F(c.SlowStart)}:{F(c.ZoomEnd)},setpts=PTS-STARTPTS,scale=w=iw*1.3:h=ih*1.3,crop=iw/1.3:ih/1.3,eq=saturation=1.4:contrast=1.12[bb];" +
         $"[0:v]trim={F(c.ZoomEnd)},setpts=PTS-STARTPTS,eq=saturation=1.25:contrast=1.08[c];" +
-        "[a][bb][c]concat=n=3:v=1[v]";
+        "[a][bb][c]concat=n=3:v=1[vbase]";
 
     private static string Cinematic(EditContext c) =>
         "[0:v]eq=contrast=1.12:saturation=1.15:gamma=0.95," +
         "drawbox=y=0:w=iw:h=ih*0.10:color=black@1:t=fill," +
         "drawbox=y=ih*0.90:w=iw:h=ih*0.10:color=black@1:t=fill," +
-        $"fade=t=in:st=0:d=0.6,fade=t=out:st={F(c.FadeOut)}:d=0.6[v]";
+        $"fade=t=in:st=0:d=0.6,fade=t=out:st={F(c.FadeOut)}:d=0.6[vbase]";
 }

@@ -30,6 +30,7 @@ public sealed class GsiMultiKillTrigger : IHighlightTrigger
 
     private readonly GsiListener _listener;
     private readonly ILogger _log;
+    private readonly GameState _gameState;
     private readonly int _minKills;
     private readonly double _windowSeconds;
     private readonly double _postRollSeconds;
@@ -51,11 +52,12 @@ public sealed class GsiMultiKillTrigger : IHighlightTrigger
     /// <param name="postRollSeconds">Segundos que se sigue grabando tras el último kill antes de guardar.</param>
     /// <param name="windowSeconds">Ventana de tiempo del multi-kill (Dota usa ~18s).</param>
     public GsiMultiKillTrigger(
-        GsiListener listener, ILogger log,
+        GsiListener listener, ILogger log, GameState gameState,
         int minKills = 2, double postRollSeconds = 8, double windowSeconds = 18)
     {
         _listener = listener;
         _log = log;
+        _gameState = gameState;
         _minKills = Math.Max(2, minKills);
         _postRollSeconds = postRollSeconds;
         _windowSeconds = windowSeconds;
@@ -90,6 +92,9 @@ public sealed class GsiMultiKillTrigger : IHighlightTrigger
         }
 
         var player = state?.Player;
+        if (player is not null)
+            _gameState.Update(state?.Hero?.Name, player.Kills, player.KillStreak);
+
         if (player?.Kills is not int kills) return;
 
         // Reloj del juego si está disponible; si no, tiempo real.

@@ -2,6 +2,7 @@ using System.IO;
 using DotaHighlights.Client.Capture;
 using DotaHighlights.Client.Editing;
 using DotaHighlights.Client.Encoding;
+using DotaHighlights.Client.Gsi;
 using Serilog;
 
 namespace DotaHighlights.Client.Recording;
@@ -18,6 +19,7 @@ public sealed class HighlightRecorder : IDisposable
     private readonly IClipEncoder _encoder;
     private readonly VideoEditor _editor;
     private readonly AppSettings _settings;
+    private readonly GameState _gameState;
     private readonly ILogger _log;
     private volatile bool _running;
 
@@ -25,11 +27,13 @@ public sealed class HighlightRecorder : IDisposable
         IFrameSource source,
         IClipEncoder encoder,
         AppSettings settings,
+        GameState gameState,
         ILogger log)
     {
         _source = source;
         _encoder = encoder;
         _settings = settings;
+        _gameState = gameState;
         _log = log;
         _editor = new VideoEditor(settings.FfmpegPath, log);
         _buffer = new RingBuffer(TimeSpan.FromSeconds(settings.BufferSeconds));
@@ -73,7 +77,8 @@ public sealed class HighlightRecorder : IDisposable
     private void OnFrame(object? sender, CapturedFrame frame) => _buffer.Add(frame);
 
     /// <summary>Vuelca el contenido actual del buffer a un archivo .mp4.</summary>
-    public async Task<string> SaveHighlightAsync(CancellationToken ct = default)
+    /// <param name="reason">Motivo del highlight (para el overlay de texto).</param>
+    public async Task<string> SaveHighlightAsync(string reason = "Manual", CancellationToken ct = default)
     {
         var frames = _buffer.Snapshot();
         if (frames.Count == 0)
@@ -89,11 +94,11 @@ public sealed class HighlightRecorder : IDisposable
         ClipSaved?.Invoke(path);
 
         // Genera las ediciones derivadas en segundo plano (no bloquea el guardado).
-        _ = GenerateEditsAsync(path, frames.Count);
+        _ = GenerateEditsAsync(path, frames.Count, reason);
         return path;
     }
 
-    private async Task GenerateEditsAsync(string source, int frameCount)
+    private async Task GenerateEditsAsync(string source, int frameCount, string reason)
     {
         try
         {
@@ -101,8 +106,9 @@ public sealed class HighlightRecorder : IDisposable
             double duration = frameCount / (double)Math.Max(1, _source.Fps);
             // El momento clave (kill) es ~postRoll segundos antes del final.
             double moneyShot = duration - _settings.PostRollSeconds;
+            var overlay = new OverlayInfo(BuildTitle(reason), _gameState.HeroDisplay, _gameState.Kills);
             var progress = new Progress<EditedClip>(clip => EditReady?.Invoke(clip));
-            var edits = await _editor.EditAllAsync(source, moneyShot, _settings.MusicPath, progress);
+            var edits = await _editor.EditAllAsync(source, moneyShot, _settings.MusicPath, overlay, progress);
             _log.Information("Ediciones generadas: {Count}", edits.Count);
             EditsCompleted?.Invoke(edits.Count);
         }
@@ -110,6 +116,16 @@ public sealed class HighlightRecorder : IDisposable
         {
             _log.Error(ex, "Fallo generando ediciones derivadas");
         }
+    }
+
+    /// <summary>Texto grande del overlay a partir del motivo del highlight.</summary>
+    private static string BuildTitle(string reason)
+    {
+        if (reason.Contains("kill", StringComparison.OrdinalIgnoreCase))
+            return reason.ToUpperInvariant();
+        if (reason.StartsWith("Hotkey", StringComparison.OrdinalIgnoreCase))
+            return "HIGHLIGHT";
+        return reason.ToUpperInvariant();
     }
 
     public void Dispose()

@@ -118,7 +118,7 @@ public sealed partial class MainViewModel : ObservableObject
         StatusText = $"Guardando highlight ({reason})…";
         try
         {
-            var path = await Task.Run(() => _recorder.SaveHighlightAsync());
+            var path = await Task.Run(() => _recorder.SaveHighlightAsync(reason));
             StatusText = $"⭐ {reason} guardado: {Path.GetFileName(path)}";
         }
         catch (Exception ex)
