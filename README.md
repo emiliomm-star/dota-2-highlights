@@ -89,4 +89,8 @@ Es un proyecto personal en evolución y **toda ayuda / feedback es bienvenida** 
 
 ## 📄 Licencia
 
-Pendiente de definir (personal / educativo por ahora).
+**GNU AGPL-3.0** — código abierto para que lo veas, aprendas y contribuyas, pero cualquier
+copia o derivado (incluido si se ofrece como servicio) **debe permanecer también open source**.
+Es decir: míralo y aprende, pero no puede convertirse en un producto cerrado de terceros.
+
+© 2026 Emilio Muñoz Monterrey. Ver [LICENSE](LICENSE).
