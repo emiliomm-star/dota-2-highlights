@@ -19,11 +19,13 @@ public sealed class VideoEditor
     private readonly ILogger _log;
     private readonly string _fontsDir;
     private readonly string _fontFile; // nombre relativo (sin ruta) o "" si no hay
+    private readonly BeatDetector _beatDetector;
 
     public VideoEditor(string ffmpegPath, ILogger log)
     {
         _ffmpegPath = ffmpegPath;
         _log = log;
+        _beatDetector = new BeatDetector(ffmpegPath, log);
         var dir = Path.GetDirectoryName(ffmpegPath);
         _ffprobePath = string.IsNullOrEmpty(dir) ? "ffprobe" : Path.Combine(dir, "ffprobe.exe");
 
@@ -64,6 +66,18 @@ public sealed class VideoEditor
         double dur = await ProbeDurationAsync(source, ct);
         if (dur <= 1) dur = 6;
 
+        string? music = !string.IsNullOrWhiteSpace(musicPath) && File.Exists(musicPath) ? musicPath : null;
+
+        // Con música: detecta beats para el preset "Beat Sync".
+        string? beatExpr = null;
+        if (music is not null)
+        {
+            var beats = await _beatDetector.DetectAsync(music, dur, ct);
+            if (beats.Count >= 4)
+                beatExpr = string.Join("+",
+                    beats.Select(b => $"0.5*exp(-((t-{EditContext.F(b)})/0.05)^2)"));
+        }
+
         double m = Math.Clamp(moneyShotSeconds, 0.8, Math.Max(0.8, dur - 0.5));
         var ctx = new EditContext
         {
@@ -73,9 +87,8 @@ public sealed class VideoEditor
             SlowEnd = Math.Clamp(m + 1.3, Math.Clamp(m - 0.7, 0.3, dur - 0.6) + 0.4, dur - 0.2),
             ZoomEnd = Math.Clamp(m + 1.8, Math.Clamp(m - 0.7, 0.3, dur - 0.6) + 0.5, dur - 0.2),
             FadeOut = Math.Max(0.2, dur - 0.6),
+            BeatPulseExpr = beatExpr,
         };
-
-        string? music = !string.IsNullOrWhiteSpace(musicPath) && File.Exists(musicPath) ? musicPath : null;
 
         var outDir = Path.Combine(Path.GetDirectoryName(source)!, "edited");
         Directory.CreateDirectory(outDir);
@@ -83,8 +96,11 @@ public sealed class VideoEditor
 
         // Genera primero los presets rápidos (rank alto) y el pesado al final,
         // pero conserva el Rank para que la UI los ordene por recomendación.
+        var presets = EditPresets.All.ToList();
+        if (ctx.BeatPulseExpr is not null) presets.Add(EditPresets.Beat);
+
         var results = new List<EditedClip>();
-        foreach (var preset in EditPresets.All.OrderByDescending(p => p.Rank))
+        foreach (var preset in presets.OrderByDescending(p => p.Rank))
         {
             ct.ThrowIfCancellationRequested();
             var outPath = Path.Combine(outDir, $"{b}_{preset.Id}.mp4");

@@ -42,6 +42,23 @@ public static class EditPresets
             $"fade=t=in:st=0:d=0.5,fade=t=out:st={F(fo)}:d=0.5[vbase]";
     }
 
+    /// <summary>Preset extra (solo con música): flashes de brillo sincronizados con
+    /// los beats detectados + grade + barras. Se añade dinámicamente si hay beats.</summary>
+    public static EditPreset Beat { get; } = new("beat", "🥁 Beat Sync", Rank: 1, BeatSync);
+
+    private static string BeatSync(EditContext c)
+    {
+        double fo = Math.Max(0.2, c.Duration - 0.4);
+        string pulse = c.BeatPulseExpr ?? "0";
+        return
+            "[0:v]fps=30," +
+            $"eq=brightness='{pulse}':contrast=1.12:saturation=1.25:eval=frame," +
+            "colorbalance=rs=-0.06:bs=0.06:rh=0.08:bh=-0.06,vignette=PI/6," +
+            "drawbox=y=0:w=iw:h=ih*0.08:color=black@1:t=fill," +
+            "drawbox=y=ih*0.92:w=iw:h=ih*0.08:color=black@1:t=fill," +
+            $"fade=t=in:st=0:d=0.4,fade=t=out:st={F(fo)}:d=0.4[vbase]";
+    }
+
     /// <summary>Versión vertical 9:16 (1080x1920) para TikTok/Shorts/Reels:
     /// recorte central + slow en el kill + grade + viñeta.</summary>
     private static string Vertical(EditContext c)

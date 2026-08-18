@@ -17,6 +17,9 @@ public sealed class EditContext
     public required double ZoomEnd { get; init; }      // z1
     public required double FadeOut { get; init; }      // dur - 0.6
 
+    /// <summary>Expresión ffmpeg del pulso de brillo por beat (o null si no hay música).</summary>
+    public string? BeatPulseExpr { get; init; }
+
     /// <summary>Formatea un número con punto decimal (ffmpeg no acepta coma).</summary>
     public static string F(double v) => v.ToString("0.###", Inv);
 }
