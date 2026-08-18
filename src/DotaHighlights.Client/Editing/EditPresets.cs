@@ -8,9 +8,10 @@ public static class EditPresets
     public static IReadOnlyList<EditPreset> All { get; } = new[]
     {
         new EditPreset("promontage", "🔥 Pro Montage", Rank: 0, ProMontage),
-        new EditPreset("slowmo", "🐢 Slow-mo", Rank: 1, Slowmo),
-        new EditPreset("zoom", "🔍 Zoom épico", Rank: 2, Zoom),
-        new EditPreset("cinematic", "🎞️ Cinematic", Rank: 3, Cinematic),
+        new EditPreset("vertical", "📱 Vertical (Shorts)", Rank: 1, Vertical),
+        new EditPreset("slowmo", "🐢 Slow-mo", Rank: 2, Slowmo),
+        new EditPreset("zoom", "🔍 Zoom épico", Rank: 3, Zoom),
+        new EditPreset("cinematic", "🎞️ Cinematic", Rank: 4, Cinematic),
     };
 
     /// <summary>
@@ -39,6 +40,25 @@ public static class EditPresets
             "drawbox=y=0:w=iw:h=ih*0.10:color=black@1:t=fill," +
             "drawbox=y=ih*0.90:w=iw:h=ih*0.10:color=black@1:t=fill," +
             $"fade=t=in:st=0:d=0.5,fade=t=out:st={F(fo)}:d=0.5[vbase]";
+    }
+
+    /// <summary>Versión vertical 9:16 (1080x1920) para TikTok/Shorts/Reels:
+    /// recorte central + slow en el kill + grade + viñeta.</summary>
+    private static string Vertical(EditContext c)
+    {
+        double s0 = c.SlowStart, s1 = c.SlowEnd, dur = c.Duration;
+        double total = s0 + (s1 - s0) / 0.5 + (dur - s1);
+        double fo = Math.Max(0.2, total - 0.4);
+
+        return
+            $"[0:v]trim=0:{F(s0)},setpts=PTS-STARTPTS[a];" +
+            $"[0:v]trim={F(s0)}:{F(s1)},setpts=(PTS-STARTPTS)/0.5,eq=saturation=1.3:contrast=1.1[bb];" +
+            $"[0:v]trim={F(s1)},setpts=PTS-STARTPTS[c];" +
+            "[a][bb][c]concat=n=3:v=1[cat];" +
+            "[cat]crop=ih*9/16:ih,scale=1080:1920," +
+            "colorbalance=rs=-0.06:bs=0.06:rh=0.08:bh=-0.06," +
+            "eq=contrast=1.1:saturation=1.15,vignette=PI/6," +
+            $"fade=t=in:st=0:d=0.4,fade=t=out:st={F(fo)}:d=0.4[vbase]";
     }
 
     private static string Slowmo(EditContext c) =>

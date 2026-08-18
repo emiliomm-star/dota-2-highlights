@@ -125,15 +125,16 @@ public sealed class VideoEditor
         if (title.Length > 0)
         {
             const string fade = "if(lt(t,0.2),0,if(lt(t,0.6),(t-0.2)/0.4,if(lt(t,2.8),1,if(lt(t,3.2),(3.2-t)/0.4,0))))";
-            parts.Add($"drawtext=fontfile={_fontFile}:text={title}:fontsize=h/9:fontcolor=white:" +
-                      $"borderw=6:bordercolor=black:x=(w-text_w)/2:y=h*0.10:alpha='{fade}'");
+            // Tamaño relativo al ANCHO para que quepa igual en 16:9 y en 9:16.
+            parts.Add($"drawtext=fontfile={_fontFile}:text={title}:fontsize=w/14:fontcolor=white:" +
+                      $"borderw=6:bordercolor=black:x=(w-text_w)/2:y=h*0.08:alpha='{fade}'");
         }
 
         string sub = Sanitize(ov.Hero);
         if (ov.Kills > 0) sub = (sub + $"  x{ov.Kills}").Trim();
         if (sub.Length > 0)
-            parts.Add($"drawtext=fontfile={_fontFile}:text={sub}:fontsize=h/26:fontcolor=white:" +
-                      "borderw=3:bordercolor=black:x=64:y=h-h*0.14");
+            parts.Add($"drawtext=fontfile={_fontFile}:text={sub}:fontsize=w/34:fontcolor=white:" +
+                      "borderw=3:bordercolor=black:x=w*0.04:y=h-h*0.12");
 
         return parts.Count > 0 ? string.Join(",", parts) : "null";
     }
