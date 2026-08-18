@@ -34,6 +34,8 @@ public sealed class GsiHero
     [JsonPropertyName("name")] public string? Name { get; set; }
     [JsonPropertyName("alive")] public bool? Alive { get; set; }
     [JsonPropertyName("level")] public int? Level { get; set; }
+    [JsonPropertyName("health_percent")] public int? HealthPercent { get; set; }
+    [JsonPropertyName("mana_percent")] public int? ManaPercent { get; set; }
 }
 
 public sealed class GsiAuth

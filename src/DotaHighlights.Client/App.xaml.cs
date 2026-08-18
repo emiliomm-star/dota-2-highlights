@@ -14,6 +14,7 @@ public partial class App : Application
 {
     private HighlightRecorder? _recorder;
     private GsiMultiKillTrigger? _gsiTrigger;
+    private GsiBigPlayTrigger? _bigPlayTrigger;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -64,6 +65,12 @@ public partial class App : Application
             Dispatcher.Invoke(() => captureVm.TriggerSave(e.Reason));
         _gsiTrigger.Start();
 
+        // Jugadas SIN kill (escape clutch, teamfight, rachas) — mismo listener.
+        _bigPlayTrigger = new GsiBigPlayTrigger(gsiListener, Log.Logger, settings.PostRollSeconds);
+        _bigPlayTrigger.Triggered += (_, e) =>
+            Dispatcher.Invoke(() => captureVm.TriggerSave(e.Reason));
+        _bigPlayTrigger.Start();
+
         // Captura siempre activa: el highlight se guarda solo, sin botones.
         if (settings.AutoStartCapture)
             captureVm.StartCommand.Execute(null);
@@ -73,6 +80,7 @@ public partial class App : Application
     {
         try
         {
+            _bigPlayTrigger?.Dispose();
             _gsiTrigger?.Dispose();
             _recorder?.Dispose();
             Log.Information("Aplicación cerrada");
